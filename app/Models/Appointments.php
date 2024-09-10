@@ -29,6 +29,12 @@ class Appointments extends Model
         return $this->belongsTo(Customers::class);
     }
 
+    // Relationship with AppointmentTreatment
+    public function treatments()
+    {
+        return $this->hasMany(AppointmentTreatments::class, 'receipt_code', 'receipt_code');
+    }
+
     public function details()
     {
         return $this->hasMany(AppointmentsDetails::class, 'receipt_code', 'receipt_code');

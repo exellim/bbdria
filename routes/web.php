@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/appointments/cr',[AppointmentController::class, 'store'])->name('appointments.store');
 
     Route::get('/attend/appointments/{id}',[StartTreatmentController::class, 'index'])->name('appointments.attend');
+    Route::post('/attend/appointments/{receipt_code}',[StartTreatmentController::class, 'store'])->name('appointments.finish');
     // Appointments + Treatments End
 
     // Ajax Start

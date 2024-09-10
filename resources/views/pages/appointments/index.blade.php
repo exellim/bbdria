@@ -210,6 +210,7 @@
                                     <h3>{{ $appoint->customer->name }}</h3>
                                     <h4>{{ $appoint->receipt_code }}</h4>
                                     <h4>{{ $appoint->appointment_date }} / {{ $appoint->appointment_time }}</h4>
+                                    <b>STATUS:{{ $appoint->status }}</b>
                                 </div>
                             </div>
                         </div>

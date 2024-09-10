@@ -22,7 +22,7 @@
             </div>
 
         </div>
-        <form method="POST" action="{{ route('customer.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('appointments.finish', $appointments[0]->receipt_code) }}" enctype="multipart/form-data">
             @csrf
             <div class="card-body">
                 <div class="container">
@@ -33,6 +33,7 @@
                                 <label class="col-sm-4">Name</label>
                                 <div class="col-sm-5">
                                     <b>{{ $appointments[0]->customer->name }}</b>
+                                    <input type="hidden" name="id_customer" value="{{ $appointments[0]->customer_id }}">
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -78,19 +79,27 @@
                                                     #
                                                 </td>
                                                 <td>
-                                                    <input type="text" readonly class="form-control" id="treatment_id[]"
-                                                        name="treatment_id[]" value="{{ $comp->supply_id }}" hidden>
+                                                    <input type="text" readonly class="form-control" id="supply_id[]"
+                                                        name="supply_id[]" value="{{ $comp->supply_id }}" hidden>
                                                     <b>{{ $comp->supplies->name }}</b>
                                                 </td>
                                                 <td>
-                                                    <input type="text" readonly class="form-control" id="qty[]"
+                                                    <input type="text" class="form-control" id="qty[]"
                                                         name="qty[]" value="{{ $comp->qty }}">
                                                 </td>
                                             </tr>
                                         @endforeach
                                     @endforeach
-
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2" class="text-end">Total:</td>
+                                        <td>
+                                            <input type="text" hidden >
+                                            Rp. {{ number_format($cost) }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>

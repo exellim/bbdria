@@ -16,7 +16,7 @@ class AppointmentController extends Controller
     public function index()
     {
         $branch = Auth::user()->branches[0];
-        $appointments = Appointments::with('customer','details.treatment')->where('branch_id',$branch->id)->get();
+        $appointments = Appointments::with('customer','details.treatment')->where('branch_id',$branch->id)->latest()->get();
         $customers = Customers::with('branch')->get();
         $treatment = Treatments::where('branch_id',$branch->id)->get();
 
