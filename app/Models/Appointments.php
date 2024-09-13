@@ -16,8 +16,14 @@ class Appointments extends Model
         'appointment_date',
         'appointment_time',
         'dp',
-        'status'
+        'status',
+        'reviews',
     ];
+
+    public function pics()
+    {
+        return $this->hasMany(AppointmentPic::class, 'receipt_code', 'receipt_code');
+    }
 
     public function branch()
     {

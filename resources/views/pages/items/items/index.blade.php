@@ -15,7 +15,7 @@
 
         select.form-control {
             /* border-color: #858585 !important;
-                                                color: #858585 !important; */
+                                                                        color: #858585 !important; */
             outline: 2px solid #858585 !important;
         }
 
@@ -53,7 +53,7 @@
 
         </div>
         <div class="card-body">
-            <table class="table table-hover">
+            <table class="table table-hover" id="itemsDt">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -75,7 +75,7 @@
                             <td>{{ $item->branch->name }} </td>
                             <td>{{ $item->itemsStock[0]->qty }} </td>
                             <td>{{ $item->expiry_date }}</td>
-                            <td>Rp. {{ number_format($item->hpp) }} </td>
+                            <td>Rp. {{ number_format($item->hpp, 0, '.', '.') }} </td>
                             <td><button class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#view-edit-modal-{{ $item->id }}">View/Edit</button></td>
                         </tr>
@@ -203,25 +203,29 @@
                                         <div class="form-group row">
                                             <label class="col-sm-3 col-form-label">Name</label>
                                             <div class="col-sm-9">
-                                                <input type="text" class="form-control" value="{{ $item->name }}" readonly name="name">
+                                                <input type="text" class="form-control" value="{{ $item->name }}"
+                                                    readonly name="name">
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label class="col-sm-3 col-form-label">Expiry date</label>
                                             <div class="col-sm-9">
-                                                <input type="date" class="form-control" value="{{ $item->expiry_date }}" readonly name="expiry_date">
+                                                <input type="date" class="form-control"
+                                                    value="{{ $item->expiry_date }}" readonly name="expiry_date">
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label class="col-sm-3 col-form-label">Descriptions</label>
                                             <div class="col-sm-9">
-                                                <input type="text" class="form-control" value="{{ $item->descriptions }}" readonly name="descriptions">
+                                                <input type="text" class="form-control"
+                                                    value="{{ $item->descriptions }}" readonly name="descriptions">
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label class="col-sm-3 col-form-label">Category</label>
                                             <div class="col-sm-9">
-                                                <select style="color: #000000 !important" class="form-control" id="category" name="category">
+                                                <select style="color: #000000 !important" class="form-control"
+                                                    id="category" name="category">
                                                     <option> -- Pick Category --</option>
                                                     @foreach ($category as $cat)
                                                         <option value="{{ $cat->id }}"
@@ -235,19 +239,22 @@
                                         <div class="form-group row">
                                             <label class="col-sm-3 col-form-label">HJL</label>
                                             <div class="col-sm-9">
-                                                <input type="text" class="form-control" value="{{ $item->hjl }}" readonly name="hjl">
+                                                <input type="text" class="form-control" value="{{ $item->hjl }}"
+                                                    readonly name="hjl">
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label class="col-sm-3 col-form-label">HPP</label>
                                             <div class="col-sm-9">
-                                                <input type="text" class="form-control" value="{{ $item->hpp }}" readonly name="hpp">
+                                                <input type="text" class="form-control" value="{{ $item->hpp }}"
+                                                    readonly name="hpp">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-lg content-center">
                                         <div class="preview-container">
-                                            <img id="imagePreview" src="{{ asset('storage/' . $item->image) }}" alt="Image Preview"
+                                            <img id="imagePreview" src="{{ asset('storage/' . $item->image) }}"
+                                                alt="Image Preview"
                                                 style="{{ isset($item->image) ? '' : 'display: none;' }}">
                                         </div>
                                         <div id="input-image-div" class="mb-3" hidden>
@@ -278,6 +285,35 @@
 @endsection
 
 @section('scripts')
+    <script>
+        $(document).ready(function() {
+            new DataTable('#itemsDt', {
+                colReorder: true,
+                responsive: true,
+                layout: {
+                    topStart: {
+                        pageLength: {
+                            menu: [5, 10, 25, 50]
+                        },
+                        buttons: [
+                            'colvis',
+                            {
+                                extend: 'spacer',
+                                style: 'bar',
+                                // text: 'Export files:'
+                            },
+                            'copy',
+                            'spacer',
+                            'excel',
+                            'spacer',
+                            'pdf'
+                        ]
+                    },
+                },
+                // dom: 'lBftrip',
+            });
+        });
+    </script>
     <script>
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];

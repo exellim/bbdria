@@ -50,7 +50,10 @@ Route::middleware('auth')->group(function () {
 
     // Supplies Start
     Route::get('/supplies',[SuppliesController::class, 'index'])->name('supplies.index');
-    Route::post('/supplies.cr',[SuppliesController::class, 'store'])->name('supplies.store');
+    Route::post('/supplies/cr',[SuppliesController::class, 'store'])->name('supplies.store');
+    Route::put('/supplies/{id}/up',[SuppliesController::class, 'update'])->name('supplies.update');
+    Route::get('/supply/in',[SuppliesController::class, 'in'])->name('supply.in');
+    Route::get('/supply/out',[SuppliesController::class, 'out'])->name('supply.out');
     // Supplies End
 
     // Treatments Start
@@ -61,6 +64,10 @@ Route::middleware('auth')->group(function () {
     // Appointments + Treatments Start
     Route::get('/appointments',[AppointmentController::class, 'index'])->name('appointments.index');
     Route::post('/appointments/cr',[AppointmentController::class, 'store'])->name('appointments.store');
+    Route::put('/appointments/{id}/uptime',[AppointmentController::class, 'updateTime'])->name('appointments.update.time');
+    Route::get('/appointments/{receipt}',[AppointmentController::class, 'changeTr'])->name('appointments.changetr');
+    Route::put('/appointments/{receipt}/uptr',[AppointmentController::class, 'acceptTr'])->name('appointments.update.tr');
+
 
     Route::get('/attend/appointments/{id}',[StartTreatmentController::class, 'index'])->name('appointments.attend');
     Route::post('/attend/appointments/{receipt_code}',[StartTreatmentController::class, 'store'])->name('appointments.finish');
@@ -72,3 +79,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+

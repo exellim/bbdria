@@ -44,7 +44,7 @@ class DashboardController extends Controller
         // Iterate over each itemStock in the supply
         foreach ($supply->itemsStock as $key=>$itemStock) {
             // Calculate cost: hpp * qty
-            $suppliesExpenses += $supply->hpp * $itemStock->qty;
+            $suppliesExpenses += $supply->hpp * ($itemStock->qty / $itemStock->capacity);
             // dd($suppliesExpenses,$supply->hpp, $itemStock->qty);
         }
     }

@@ -22,9 +22,20 @@
     <link rel="stylesheet" href="{{ asset('assets/vendors/select2-bootstrap-5/select2-bs5-theme.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/vendors/select2-bootstrap-5/copy gentelaella/select2.min.css') }}">
+
+
     <link rel="stylesheet" href="{{ asset('assets/vendors/summernote/summernote-lite.min.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <link rel="stylesheet" href="{{ asset('assets/vendors/datatables/download/datatables.min.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.2/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/2.0.4/css/colReorder.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/rowreorder/1.5.0/css/rowReorder.bootstrap5.min.css">
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+
     <style>
         /* Floating action button */
         @import url("https://fonts.googleapis.com/css?family=Roboto");
@@ -184,7 +195,7 @@
     @yield('styles')
 
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" />
+    <link rel="shortcut icon" href="{{ asset('assets/images/logos/favicon.ico') }}" />
 </head>
 
 <body>

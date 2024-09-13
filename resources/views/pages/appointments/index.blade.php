@@ -173,6 +173,11 @@
         .action-span i {
             font-size: 1.5rem;
         }
+
+        a.disabled {
+            pointer-events: none;
+            cursor: default;
+        }
     </style>
 @endsection
 
@@ -353,8 +358,10 @@
 
     {{-- Modal View Start --}}
     @foreach ($appointments as $appoint)
-        <form method="POST" action="{{ route('items.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('appointments.update.time', $appoint->id) }}"
+            enctype="multipart/form-data">
             @csrf
+            @method('put')
             <div class="modal fade" id="customer-view-{{ $appoint->id }}" tabindex="-1"
                 aria-labelledby="cardModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -385,8 +392,27 @@
                                                 </tr>
                                                 <tr>
                                                     <td>Appointment Time</td>
-                                                    <td>{{ $appoint->appointment_date }} /
-                                                        {{ $appoint->appointment_time }}</td>
+                                                    <td>
+                                                        <div id="editable-{{ $appoint->id }}">
+                                                            {{ $appoint->appointment_date }} /
+                                                            {{ $appoint->appointment_time }}
+                                                        </div>
+                                                        <div id="editable-show-{{ $appoint->id }}" hidden>
+                                                            <input required type="date" class="form-control"
+                                                                name="appointment_date"
+                                                                value="{{ $appoint->appointment_date }}">
+                                                            <input required type="time" class="form-control"
+                                                                name="appointment_time"
+                                                                value="{{ $appoint->appointment_time }}">
+                                                        </div>
+                                                        @if ($appoint->status === 'finish')
+                                                        @else
+                                                            <button type="button" onclick="editme({{ $appoint->id }})"
+                                                                class="btn btn-sm btn-danger btn-rounded">
+                                                                <i class="mdi mdi-clock"></i>
+                                                            </button>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">
@@ -442,13 +468,22 @@
 
                             </div>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-gradient-success btn-icon-text" hidden>
+                                <button type="submit" class="btn btn-gradient-success btn-icon-text"
+                                    id="save_button-{{ $appoint->id }}" hidden>
                                     <i class="mdi mdi-close-box btn-icon-prepend"></i> Save
                                 </button>
-                                <a href="{{ route('appointments.attend', $appoint->id) }}" target="_blank"
-                                    class="btn btn-gradient-primary btn-icon-text">
-                                    <i class="mdi mdi-briefcase-check btn-icon-prepend"></i> Attend
-                                </a>
+                                @if ($appoint->status === 'finish')
+                                @else
+                                    <a href="{{ route('appointments.changetr', $appoint->receipt_code) }}"
+                                        id="stopme-{{ $appoint->id }}" target="_blank"
+                                        class="btn btn-gradient-warning btn-icon-text">
+                                        <i class="mdi mdi-contrast-circle btn-icon-prepend"></i> Change Treatment
+                                    </a>
+                                    <a href="{{ route('appointments.attend', $appoint->id) }}" id="stopme"
+                                        target="_blank" class="btn btn-gradient-primary btn-icon-text">
+                                        <i class="mdi mdi-briefcase-check btn-icon-prepend"></i> Attend
+                                    </a>
+                                @endif
                                 <button type="button" class="btn btn-gradient-danger btn-icon-text"
                                     data-bs-dismiss="modal">
                                     <i class="mdi mdi-hospital btn-icon-prepend"></i> Close
@@ -462,20 +497,31 @@
         </form>
     @endforeach
     {{-- Modal View End --}}
-
 @endsection
 @section('scripts')
     <script>
-        // $(document).ready(function() {
+        function editme(index) {
+            const editable = document.querySelector('#editable-' + index);
+            const editableShow = document.querySelector('#editable-show-' + index);
+            const stopme = document.querySelector('#stopme');
+            const stopme_2 = document.querySelector('#stopme-' + index);
+            const save_button = document.querySelector('#save_button-' + index);
 
-        //     // $("#customer-name").select2({});
-        // });
+            if (editable.hasAttribute('hidden')) {
+                editable.removeAttribute('hidden');
+                editableShow.setAttribute('hidden', 'true');
+                stopme.removeAttribute('hidden');
+                stopme_2.removeAttribute('hidden');
+                save_button.setAttribute('hidden', 'true');
+            } else {
+                stopme.setAttribute('hidden', 'true');
+                stopme_2.setAttribute('hidden', 'true');
+                editable.setAttribute('hidden', 'true');
+                editableShow.removeAttribute('hidden');
+                save_button.removeAttribute('hidden');
 
-        // $(document).ready(function() {
-        //     $('.select2-bs5').select2({
-        //         theme: 'bootstrap-5'
-        //     });
-        // });
+            }
+        }
     </script>
 
     <script>

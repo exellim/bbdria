@@ -9,6 +9,7 @@ use App\Models\Customers;
 use App\Models\SuppliesOut;
 use App\Models\SuppliesStock;
 use App\Models\TreatmentsComponents;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,9 @@ class StartTreatmentController extends Controller
         ->where('id',$id)
         ->get();
 
+        $users = User::whereHas('roles', function ($query) {
+            $query->whereIn('name', ['doctor', 'beautician', 'assistant doctor']);
+        })->get();
         $cost = 0;
 
         foreach ($appointments[0]->details as $key => $value) {
@@ -34,7 +38,7 @@ class StartTreatmentController extends Controller
 
         // dd($appointments[0]->details[0]->treatment);
 
-        return view('pages.appointments.finish', compact('appointments','cost'));
+        return view('pages.appointments.finish', compact('appointments','cost','users'));
     }
 
     public function store(Request $request, $receipt_code)
@@ -74,22 +78,6 @@ class StartTreatmentController extends Controller
 
         Appointments::where('receipt_code', $receipt_code)->update(['status' => 'finish']);
 
-
-        // foreach ($validatedData['supply_id'] as $index => $supplyId) {
-        //     $quantity = $validatedData['qty'][$index];
-
-        //     SuppliesStock::where('supply_id', $supplyId)
-        //         ->decrement('qty', $quantity); // Use decrement to directly update the qty
-        // }
-
-        // foreach ($validatedData['supply_id'] as $index => $supplyId) {
-        //     $quantity = $validatedData['qty'][$index];
-        //     $suppliesStock = SuppliesStock::where('supply_id', $supplyId)->firstOrFail();
-        //     // dd($suppliesStock);
-        //     $suppliesStock->update([
-        //         'qty' => $suppliesStock->qty - $quantity,
-        //     ]);
-        // }
 
 
         session()->flash('toast', [

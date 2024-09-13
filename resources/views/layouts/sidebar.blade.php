@@ -71,10 +71,18 @@
                 <i class="mdi mdi-account-multiple menu-icon"></i>
             </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item {{ request()->routeIs('appointments.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('appointments.index') }}">
                 <span class="menu-title">Appointments</span>
                 <i class="mdi mdi-file-document-box menu-icon"></i>
+            </a>
+        </li>
+
+
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('treatments.index') }}">
+                <span class="menu-title">Treatments</span>
+                <i class="mdi mdi-needle menu-icon"></i>
             </a>
         </li>
         <li class="nav-item">
@@ -92,48 +100,50 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('supplies.index') }}">Supplies</a>
                     </li>
+                    {{-- <li class="nav-item">
+                        <a class="nav-link" href="{{ route('supplies.index') }}">Supplies</a>
+                    </li> --}}
                 </ul>
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('treatments.index') }}">
-                <span class="menu-title">Treatments</span>
-                <i class="mdi mdi-needle menu-icon"></i>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false"
-                aria-controls="auth">
-                <span class="menu-title">User Pages</span>
+            <a class="nav-link" data-bs-toggle="collapse" href="#manage-sup" aria-expanded="false"
+                aria-controls="manage-sup">
+                <span class="menu-title">Supplies M</span>
                 <i class="menu-arrow"></i>
-                <i class="mdi mdi-lock menu-icon"></i>
+                <i class="mdi mdi-apps-box menu-icon"></i>
             </a>
-            <div class="collapse" id="auth">
+            <div class="collapse" id="manage-sup">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="pages/samples/blank-page.html"> Blank Page </a>
+                        <a class="nav-link {{ request()->routeIs('supply.in') ? 'active' : '' }}" href="{{ route('supply.in') }}">Supply In</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="pages/samples/login.html"> Login </a>
+                        <a class="nav-link {{ request()->routeIs('supply.out') ? 'active' : '' }}" href="{{ route('supply.out') }}">Supply Out</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="pages/samples/register.html"> Register </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="pages/samples/error-404.html"> 404 </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="pages/samples/error-500.html"> 500 </a>
-                    </li>
+                    {{-- <li class="nav-item">
+                        <a class="nav-link" href="{{ route('supplies.index') }}">Supplies</a>
+                    </li> --}}
                 </ul>
             </div>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="docs/documentation.html" target="_blank">
-                <span class="menu-title">Documentation</span>
-                <i class="mdi mdi-file-document-box menu-icon"></i>
+        {{-- <li class="nav-item {{ request()->routeIs('supply.in') || request()->routeIs('supply.out') ? 'active' : '' }}">
+            <a class="nav-link" data-bs-toggle="collapse" href="#supplyM" aria-expanded="false"
+                aria-controls="supplyM">
+                <span class="menu-title">Manage Supply</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-apps-box menu-icon"></i>
             </a>
-        </li>
+            <div class="collapse {{ request()->routeIs('supply.in') || request()->routeIs('supply.out') ? 'show' : '' }}" id="supplyM">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('supply.in') ? 'active' : '' }}" href="{{ route('supply.in') }}">Supply In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('supply.out') ? 'active' : '' }}" href="{{ route('supply.out') }}">Supply Out</a>
+                    </li>
+                </ul>
+            </div>
+        </li> --}}
     </ul>
 </nav>

@@ -52,4 +52,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Branch::class, 'users_branches', 'user_id', 'branch_id');  // This will also track the timestamps when the relation is created/updated
     }
+
+    // Relationship with AppointmentPic
+    public function appointmentPics()
+    {
+        return $this->hasMany(AppointmentPic::class, 'users_id');
+    }
+
 }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->time('appointment_time');
             $table->decimal('dp', 10, 2)->nullable(); // Deposit amount
             $table->enum('status', ['waiting', 'finish'])->default('waiting');
+            $table->string('reviews')->nullable();
             $table->timestamps();
         });
     }
