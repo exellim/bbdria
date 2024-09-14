@@ -53,7 +53,7 @@
 
         </div>
         <div class="card-body">
-            <table class="table table-hover wrap" id="suppliesDt">
+            <table class="table table-responsive table-hover wrap" id="suppliesDt">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -348,10 +348,7 @@
                                 style: 'bar',
                                 // text: 'Export files:'
                             },
-                            'copy',
-                            'spacer',
                             'excel',
-                            'spacer',
                             'pdf'
                         ]
                     },

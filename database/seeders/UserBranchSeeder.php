@@ -14,6 +14,6 @@ class UserBranchSeeder extends Seeder
     public function run(): void
     {
         //
-        UsersBranch::create(['user_id'=>1, 'branch_id'=>1]);
+        // UsersBranch::create(['user_id'=>1, 'branch_id'=>1]);
     }
 }

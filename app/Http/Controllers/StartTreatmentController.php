@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppointmentPic;
 use App\Models\Appointments;
 use App\Models\AppointmentsDetails;
 use App\Models\AppointmentTreatments;
@@ -19,12 +20,15 @@ class StartTreatmentController extends Controller
     //
     public function index($id)
     {
-        $appointments = Appointments::with('customer','details.treatment.components.supplies')
+
+        $branch = Auth::user()->branches[0]->id;
+
+        $appointments = Appointments::with('customer','details.treatment.components.supplies','pics.user')
         ->where('id',$id)
         ->get();
 
         $users = User::whereHas('roles', function ($query) {
-            $query->whereIn('name', ['doctor', 'beautician', 'assistant doctor']);
+            $query->whereIn('name', ['doctor', 'beautician', 'assistant']);
         })->get();
         $cost = 0;
 
@@ -43,38 +47,62 @@ class StartTreatmentController extends Controller
 
     public function store(Request $request, $receipt_code)
     {
-        // Validate the request data
+        // dd($request->all());
         $validatedData = $request->validate([
-            'supply_id' => 'required|array', // Validate treatment IDs as an array
-            'supply_id.*' => 'exists:supplies,id', // Ensure each treatment ID exists
-            'qty' => 'required|array', // Validate treatment IDs as an array
-            'qty.*' => 'numeric|min:0', // Ensure quantities are numeric and non-negative
-        ]);
+            'supply_id' => 'required|array', // Validate supply IDs as an array
+            'supply_id.*' => 'exists:supplies,id', // Ensure each supply ID exists in the supplies table
+            'user_id' => function ($attribute, $value, $fail) use ($request) {
+                // Check if at least one Doctor or Beautician is selected
+                $doctorSelected = false;
+                $beauticianSelected = false;
 
+                foreach ($request->user_id as $userId) {
+                    $user = \App\Models\User::find($userId);
+                    if ($user && $user->roles->contains('name', 'doctor')) {
+                        $doctorSelected = true;
+                    }
+                    if ($user && $user->roles->contains('name', 'beautician')) {
+                        $beauticianSelected = true;
+                    }
+                }
+
+                if (!$doctorSelected && !$beauticianSelected) {
+                    $fail('You must select at least one Doctor or Beautician.');
+                }
+            },
+            'qty' => 'required|array', // Validate quantities as an array
+            'qty.*' => 'numeric|min:0', // Ensure each quantity is numeric and non-negative
+        ]);
 
         // $customerValue = $request->id_customer;
 
         // $customer = Customers::where('id', $customerValue)->get();
 
-        foreach ($validatedData['supply_id'] as $index => $supplyId) {
-            $quantity = $validatedData['qty'][$index];
-            // $supplies = SuppliesStock::where('supply_id', $supplyId)->first();
+        // foreach ($validatedData['supply_id'] as $index => $supplyId) {
+        //     $quantity = $validatedData['qty'][$index];
+        //     $oldSuppliesStock = SuppliesStock::where('supply_id',$supplyId)->first();
 
-            // dd($supplies);
-            $oldSuppliesStock = SuppliesStock::where('supply_id',$supplyId)->first();
+        //     AppointmentTreatments::create([
+        //         'receipt_code' => $receipt_code,
+        //         'supply_id' => $supplyId,
+        //         'supply_qty' => $quantity,
+        //     ]);
 
-            AppointmentTreatments::create([
-                'receipt_code' => $receipt_code,
-                'supply_id' => $supplyId,
-                'supply_qty' => $quantity,
-            ]);
-            // $supplies->update([
-            //     'qty' => $supplies->qty - $quantity
-            // ]);
+        //     SuppliesStock::where('supply_id', $supplyId)
+        //     ->update(['qty' => $oldSuppliesStock->qty - $quantity]);
+        // }
 
-            SuppliesStock::where('supply_id', $supplyId)
-            ->update(['qty' => $oldSuppliesStock->qty - $quantity]);
+        foreach ($validatedData['user_id'] as $uid) {
+            if (!is_null($uid)) { // Check if user_id is not null
+                AppointmentPic::create([
+                    'receipt_code' => $receipt_code,
+                    'users_id' => $uid,
+                ]);
+            }
         }
+
+
+
 
         Appointments::where('receipt_code', $receipt_code)->update(['status' => 'finish']);
 

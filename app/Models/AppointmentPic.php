@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class AppointmentPic extends Model
 {
     use HasFactory;
-    protected $table = 'appointments';
+    protected $table = 'appointment_pic';
     protected $fillable = [
         'receipt_code',
         'users_id',
+        'review',
+        'description'
     ];
 
     // Relationship with Appointment
