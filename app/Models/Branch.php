@@ -17,6 +17,11 @@ class Branch extends Model
         return $this->belongsToMany(User::class, 'users_branches');
     }
 
+    public function finance()
+    {
+        return $this->hasMany(MonthlyFinance::class);
+    }
+
     public function categories()
     {
         return $this->hasMany(Categories::class);

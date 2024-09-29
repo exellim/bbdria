@@ -78,19 +78,19 @@ class StartTreatmentController extends Controller
 
         // $customer = Customers::where('id', $customerValue)->get();
 
-        // foreach ($validatedData['supply_id'] as $index => $supplyId) {
-        //     $quantity = $validatedData['qty'][$index];
-        //     $oldSuppliesStock = SuppliesStock::where('supply_id',$supplyId)->first();
+        foreach ($validatedData['supply_id'] as $index => $supplyId) {
+            $quantity = $validatedData['qty'][$index];
+            $oldSuppliesStock = SuppliesStock::where('supply_id',$supplyId)->first();
 
-        //     AppointmentTreatments::create([
-        //         'receipt_code' => $receipt_code,
-        //         'supply_id' => $supplyId,
-        //         'supply_qty' => $quantity,
-        //     ]);
+            AppointmentTreatments::create([
+                'receipt_code' => $receipt_code,
+                'supply_id' => $supplyId,
+                'supply_qty' => $quantity,
+            ]);
 
-        //     SuppliesStock::where('supply_id', $supplyId)
-        //     ->update(['qty' => $oldSuppliesStock->qty - $quantity]);
-        // }
+            SuppliesStock::where('supply_id', $supplyId)
+            ->update(['qty' => $oldSuppliesStock->qty - $quantity]);
+        }
 
         foreach ($validatedData['user_id'] as $uid) {
             if (!is_null($uid)) { // Check if user_id is not null
@@ -102,6 +102,21 @@ class StartTreatmentController extends Controller
         }
 
 
+        $branchname = Auth::user()->branches[0]->name;
+
+        // Get the file extension
+        // $extension = 'png';
+        // Create a filename using the request name and the extension
+        // $fileName = $receipt_code . '.' . $extension;
+        // Store the image with the new name
+
+        // $cust = Appointments::with('customer','details.treatment.components.supplies','pics.user')->where('receipt_code', $receipt_code)->get();
+        // dd($cust[0]->customer->name);
+
+        // $imagePath = $request->file('image')->storeAs();
+
+        // $url = route('review', $receipt_code); // Your URL here
+        // $qrPath = storage_path('images/'. $branchname.'/'.'treatment-complete/'.$receipt_code.'/', $fileName, 'public'); // Custom path to save QR code image
 
 
         Appointments::where('receipt_code', $receipt_code)->update(['status' => 'finish']);
@@ -115,6 +130,56 @@ class StartTreatmentController extends Controller
         ]);
 
         return redirect()->route('appointments.index');
+
+    }
+
+    public function reviews( $receipt_code)
+    {
+
+        $pics = Appointments::with('customer','details.treatment.components.supplies','pics.user')->where('receipt_code',$receipt_code)
+        ->get();
+        if ($pics[0]->pics[0]->review != 0) {
+            $cust = Appointments::with('customer','details.treatment.components.supplies','pics.user')->where('receipt_code',$receipt_code)
+            ->get();
+            return view('pages.appointments.thanks',compact('cust'));
+        } else {
+            return view('pages.appointments.review', compact('pics'));
+        }
+
+        // dd();
+
+        // dd($pics[0]);
+
+        // AppointmentPic::where('receipt_code', $receipt_code)->update([
+        //     ''
+        // ]);
+
+    }
+
+    public function storeReviews(Request $request, $receipt_code)
+    {
+        // dd($request->all());
+        $validatedData = $request->validate([
+            'id_pic' => 'required|array', // Validate treatment IDs as an array
+            'id_pic.*' => 'exists:users,id', // Ensure each treatment ID exists
+            'review' => 'required|array', // Validate treatment IDs as an array
+            'review.*' => 'string', // Ensure each treatment ID exists
+            'review_pic' => 'required|array', // Validate treatment IDs as an array
+            'review_pic.*' => 'string', // Ensure each treatment ID exists
+        ]);
+
+        $cust = Appointments::with('customer','details.treatment.components.supplies','pics.user')->where('receipt_code',$receipt_code)
+        ->get();
+
+        foreach ($validatedData['id_pic'] as $index => $review) {
+            AppointmentPic::where('receipt_code', $receipt_code)->where('users_id',$review)
+            ->update([
+                'review' => $validatedData['review'][$index],
+                'description' => $validatedData['review_pic'][$index],
+            ]);
+        }
+
+        return view('pages.appointments.thanks',compact('cust'));
 
     }
 }

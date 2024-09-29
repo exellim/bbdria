@@ -15,7 +15,15 @@
                     <h4 class="font-weight-normal mb-3">{{ \Carbon\Carbon::now()->format('F') }}'s Expenses <i
                             class="mdi mdi-chart-line mdi-24px float-end"></i>
                     </h4>
-                    <h2 class="mb-5">Rp. {{ number_format($suppliesExpenses) }}</h2>
+                    <h2 class="mb-5">
+                        Rp. {{ number_format($monthly_finances[0]->expenses) }}
+                        <br>
+                        <p style="font-size: 12px">
+                            by Stock/Supplies In:
+                            <br>
+                            Rp. {{ number_format($suppliesExpenses) }}
+                        </p>
+                    </h2>
                     <h6 class="card-text">+ 0%</h6>
                 </div>
             </div>
@@ -49,7 +57,7 @@
                     <h4 class="font-weight-normal mb-3">{{ \Carbon\Carbon::now()->format('F') }}'s Net Profit <i
                             class="mdi mdi-diamond mdi-24px float-end"></i>
                     </h4>
-                    <h2 class="mb-5">Rp. {{ number_format($appointmentProfit - $suppliesExpenses) }}</h2>
+                    <h2 class="mb-5">Rp. {{ number_format($appointmentProfit - $monthly_finances[0]->expenses) }}</h2>
                     <h6 class="card-text">
                         @if ($suppliesExpenses > 0)
                             <b>+</b>{{ number_format($percentageProfit, 2, ',', '.') }}%

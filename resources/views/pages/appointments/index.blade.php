@@ -288,8 +288,8 @@
                                     <table>
                                         <tbody>
                                             <tr>
-                                            <td>Name</td>
-                                                <td>:</td>
+                                            <td style="text-align: left; vertical-align: top;">Name</td>
+                                                <td style="text-align: left; vertical-align: top;">:</td>
                                                 <td style="overflow: hidden;">{{ Str::limit($appoint->customer->name, 18,'') }}</td>
                                             </tr>
                                             <tr>

@@ -9,6 +9,8 @@ use App\Models\Treatments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class AppointmentController extends Controller
 {
