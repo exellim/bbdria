@@ -12,8 +12,8 @@ use App\Http\Controllers\SuppliesController;
 use App\Http\Controllers\TreatmentsController;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/', function () {
-//     return view('welcome');
+// Route::get('/thanks', function () {
+//     return view('pages.appointments.thanks');
 // });
 
 Route::get('/', [DashboardController::class, 'dashboard'])
@@ -23,6 +23,10 @@ Route::get('/', [DashboardController::class, 'dashboard'])
 // Route::get('/', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/appointments/review/{receipt_code}',[StartTreatmentController::class, 'reviews'])->name('review');
+Route::put('/appointments/store/review/{receipt_code}',[StartTreatmentController::class, 'storeReviews'])->name('review.store');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -46,11 +50,17 @@ Route::middleware('auth')->group(function () {
     // Items Start
     Route::get('/items',[ItemsController::class, 'index'])->name('items.index');
     Route::post('/items/cr',[ItemsController::class, 'store'])->name('items.store');
+
+    Route::get('/cashier', [ItemsController::class,'cashier'])->name('cashier.index');
+    Route::post('/cashier/st', [ItemsController::class,'cashierst'])->name('cashier.store');
     // Items End
 
     // Supplies Start
     Route::get('/supplies',[SuppliesController::class, 'index'])->name('supplies.index');
-    Route::post('/supplies.cr',[SuppliesController::class, 'store'])->name('supplies.store');
+    Route::post('/supplies/cr',[SuppliesController::class, 'store'])->name('supplies.store');
+    Route::put('/supplies/{id}/up',[SuppliesController::class, 'update'])->name('supplies.update');
+    Route::get('/supply/in',[SuppliesController::class, 'in'])->name('supply.in');
+    Route::get('/supply/out',[SuppliesController::class, 'out'])->name('supply.out');
     // Supplies End
 
     // Treatments Start
@@ -61,8 +71,13 @@ Route::middleware('auth')->group(function () {
     // Appointments + Treatments Start
     Route::get('/appointments',[AppointmentController::class, 'index'])->name('appointments.index');
     Route::post('/appointments/cr',[AppointmentController::class, 'store'])->name('appointments.store');
+    Route::put('/appointments/{id}/uptime',[AppointmentController::class, 'updateTime'])->name('appointments.update.time');
+    Route::get('/appointments/{receipt}',[AppointmentController::class, 'changeTr'])->name('appointments.changetr');
+    Route::put('/appointments/{receipt}/uptr',[AppointmentController::class, 'acceptTr'])->name('appointments.update.tr');
+
 
     Route::get('/attend/appointments/{id}',[StartTreatmentController::class, 'index'])->name('appointments.attend');
+    Route::post('/attend/appointments/{receipt_code}',[StartTreatmentController::class, 'store'])->name('appointments.finish');
     // Appointments + Treatments End
 
     // Ajax Start
@@ -71,3 +86,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+

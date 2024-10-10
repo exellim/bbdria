@@ -233,7 +233,7 @@
     <!-- Modal Create Start -->
     <form method="POST" action="{{ route('treatments.store') }}" enctype="multipart/form-data">
         @csrf
-        <div class="modal fade" id="create-appointment" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true">
+        <div class="modal fade create-app" id="create-appointment" aria-labelledby="cardModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-md">
                 <div class="modal-content">
                     <div class="modal-header bg-primary">
@@ -275,8 +275,7 @@
                                                 <tr>
                                                     <td class="row-number">1</td>
                                                     <td>
-                                                        <select class="form-select single-select-field supply_id[0]"
-                                                            id="supply_id[0]" data-placeholder="Pick Supply"
+                                                        <select class="form-control select2" data-placeholder="Pick Supply"
                                                             name="supply_id[]">
                                                             <option value=""></option>
                                                             @foreach ($supplies as $supply)
@@ -284,6 +283,14 @@
                                                                 </option>
                                                             @endforeach
                                                         </select>
+                                                        {{-- <select class="form-select single-select-field supply_id"
+                                                            data-placeholder="Pick Supply" name="supply_id[]">
+                                                            <option value=""></option>
+                                                            @foreach ($supplies as $supply)
+                                                                <option value="{{ $supply->id }}">{{ $supply->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select> --}}
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control" name="qty[]">
@@ -380,7 +387,7 @@
                                                                 @endphp
 
                                                                 @foreach ($treat->components as $comp)
-                                                                    @if ($comp->supplies->itemsStock[0]->qty < $comp->qty )
+                                                                    @if ($comp->supplies->itemsStock[0]->qty < $comp->qty)
                                                                         <!-- Use '==' for comparison, not '=' -->
                                                                         @if (!$displayReasonText)
                                                                             <b class="text-danger">Not Possible to
@@ -423,22 +430,23 @@
 
 @endsection
 @section('scripts')
+    {{-- <script>
+        $(document).ready(function() {
+
+            $("#customer-name").select2({});
+        });
+
+        $(document).ready(function() {
+            $('.supply_id[0]').select2({
+                theme: 'bootstrap-5'
+            });
+        });
+    </script> --}}
+
     <script>
-        // $(document).ready(function() {
-
-        //     // $("#customer-name").select2({});
-        // });
-
-        // $(document).ready(function() {
-        //     $('.select2-bs5').select2({
-        //         theme: 'bootstrap-5'
-        //     });
-        // });
-    </script>
-
-    <script>
-        $('.supply_id[0]').select2({
-            theme: 'bootstrap-5',
+        $('.select2').select2({
+            theme: 'bootstrap-5', // Assuming you're using Bootstrap 5 theme for Select2
+            width: '100%',
             dropdownParent: $('#create-appointment')
         });
     </script>
@@ -448,8 +456,10 @@
 
         // Function to initialize Select2 on elements
         function initializeSelect2() {
-            $('.single-select-field').select2({
-                theme: 'bootstrap-5' // Assuming you're using Bootstrap 5 theme for Select2
+            $('.select2').select2({
+                theme: 'bootstrap-5', // Assuming you're using Bootstrap 5 theme for Select2
+                width: '100%',
+                dropdownParent: $('#create-appointment')
             });
         }
 
@@ -472,22 +482,18 @@
             // Reinitialize Select2 for all rows after renaming the IDs
             initializeSelect2();
         }
-
         // Add a new row
         $(document).on('click', '.add-row-span', function() {
             const newRow = `
         <tr>
             <td class="row-number">${rowIndex + 1}</td>
             <td>
-                <select class="form-select single-select-field supply_id[${rowIndex}]"
-                    id="supply_id[${rowIndex}]" data-placeholder="Pick Supply"
-                    name="supply_id[]">
+                <select class="form-control select2" data-placeholder="Pick Supply" name="supply_id[]">
                     <option value=""></option>
                     @foreach ($supplies as $supply)
                         <option value="{{ $supply->id }}">{{ $supply->name }}
                         </option>
                     @endforeach
-
                 </select>
             </td>
             <td>

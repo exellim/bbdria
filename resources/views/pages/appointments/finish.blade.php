@@ -22,7 +22,8 @@
             </div>
 
         </div>
-        <form method="POST" action="{{ route('customer.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('appointments.finish', $appointments[0]->receipt_code) }}"
+            enctype="multipart/form-data">
             @csrf
             <div class="card-body">
                 <div class="container">
@@ -33,6 +34,7 @@
                                 <label class="col-sm-4">Name</label>
                                 <div class="col-sm-5">
                                     <b>{{ $appointments[0]->customer->name }}</b>
+                                    <input type="hidden" name="id_customer" value="{{ $appointments[0]->customer_id }}">
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -57,10 +59,95 @@
                             </div>
                         </div>
                     </div>
-                    <h4>Treatment's Data</h4>
+
+                    <!-- Appointed Dr, Asst, Beautician -->
+                    <div class="row d-flex align-items-center">
+                        <h4>PIC</h4>
+                        <div class="col-lg">
+                            <table class="table table-bordered" id="dynamicTable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Select</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="doctorBody">
+                                    <tr>
+                                        <th scope="row">Doctor</th>
+                                        <td>
+
+                                            <select class="form-select doctor-select" data-placeholder="Pick Doctor"
+                                                name="user_id[]">
+                                                <option value="">Select an Doctor</option>
+                                                @foreach ($users as $us)
+                                                    @if ($us->roles->contains('name', 'doctor'))
+                                                        <!-- If using a collection of roles -->
+                                                        <option value="{{ $us->id }}">{{ $us->name }}
+                                                        </option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary add-doctor">Add Doctor</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+
+                                <tbody id="assistantBody">
+                                    <tr>
+                                        <th scope="row">Assistant</th>
+                                        <td>
+                                            <select class="form-select assistant-select" style="width: 100%;"
+                                                data-placeholder="Pick Assistant" name="user_id[]">
+                                                <option value="">Select an Assistant</option>
+                                                @foreach ($users as $us)
+                                                    @if ($us->roles->contains('name', 'assistant'))
+                                                        <!-- If using a collection of roles -->
+                                                        <option value="{{ $us->id }}">{{ $us->name }}
+                                                        </option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary add-assistant">Add Assistant</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+
+                                <tbody id="beauticianBody">
+                                    <tr>
+                                        <th scope="row">Beautician</th>
+                                        <td>
+                                            <select class="form-select beautician-select" style="width: 100%;"
+                                                data-placeholder="Pick Beautician" name="user_id[]">
+                                                <option value="">Select a Beautician</option>
+                                                @foreach ($users as $us)
+                                                    @if ($us->roles->contains('name', 'beautician'))
+                                                        <!-- If using a collection of roles -->
+                                                        <option value="{{ $us->id }}">{{ $us->name }}
+                                                        </option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary add-beautician">Add Beautician</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Appointed End -->
+                    <br>
+                    <br>
+
                     <div class="d-flex align-items-center">
                         <div class="col-lg">
-                            <h5>Treatments:</h5>
+                            <h4>Treatment's Data</h4>
                             <table class="table">
                                 <thead>
                                     <th>#</th>
@@ -70,7 +157,9 @@
                                 <tbody class="table-body">
                                     @foreach ($appointments[0]->details as $treat)
                                         <tr>
-                                            <td colspan="3" class="bg-primary text-white"><b>{{ $treat->treatment->name }}</b></td>
+                                            <td colspan="3" class="bg-primary text-white">
+                                                <b>{{ $treat->treatment->name }}</b>
+                                            </td>
                                         </tr>
                                         @foreach ($treat->treatment->components as $comp)
                                             <tr>
@@ -78,19 +167,27 @@
                                                     #
                                                 </td>
                                                 <td>
-                                                    <input type="text" readonly class="form-control" id="treatment_id[]"
-                                                        name="treatment_id[]" value="{{ $comp->supply_id }}" hidden>
+                                                    <input type="text" readonly class="form-control" id="supply_id[]"
+                                                        name="supply_id[]" value="{{ $comp->supply_id }}" hidden>
                                                     <b>{{ $comp->supplies->name }}</b>
                                                 </td>
                                                 <td>
-                                                    <input type="text" readonly class="form-control" id="qty[]"
-                                                        name="qty[]" value="{{ $comp->qty }}">
+                                                    <input type="text" class="form-control" id="qty[]" name="qty[]"
+                                                        value="{{ $comp->qty }}">
                                                 </td>
                                             </tr>
                                         @endforeach
                                     @endforeach
-
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2" class="text-end">Total:</td>
+                                        <td>
+                                            <input type="text" hidden>
+                                            Rp. {{ number_format($cost) }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -104,4 +201,91 @@
 @endsection
 
 @section('scripts')
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for existing elements
+            $('.form-select').select2({
+                width: '100%',
+                theme: 'bootstrap-5' // Assuming you're using Bootstrap 5 theme for Select2
+            });
+            // Function to reinitialize select2 for dynamic elements
+            function initializeSelect2() {
+                $('.form-select').select2({
+                    width: '100%',
+                    theme: 'bootstrap-5' // Assuming you're using Bootstrap 5 theme for Select2
+                });
+            }
+
+            // Function to add a new row
+            function addRow(bodyId, role, selectClass, options) {
+                const rowCount = $(`#${bodyId} tr`).length + 1; // Count the current rows
+                const newRow = `
+                <tr>
+                    <td></td>
+                    <td>
+                        <select class="form-select ${selectClass}" style="width: 100%;" name="user_id[]"
+                        data-placeholder="Pick ${role}" required>
+                            <option>Select a ${role}</option>
+                            ${options}
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger remove-row">Remove</button>
+                    </td>
+                </tr>
+            `;
+                $(`#${bodyId}`).append(newRow);
+                initializeSelect2();
+            }
+
+            // Add Doctor event
+            $('.add-doctor').on('click', function(e) {
+                e.preventDefault(); // Prevent form submission
+                addRow('doctorBody', 'Doctor', 'doctor-select', `
+                @foreach ($users as $us)
+                    @if ($us->roles->contains('name', 'doctor'))
+                        <!-- If using a collection of roles -->
+                        <option value="{{ $us->id }}">{{ $us->name }}
+                        </option>
+                    @endif
+                @endforeach
+            `);
+            });
+
+            // Add Assistant event
+            $('.add-assistant').on('click', function(e) {
+                e.preventDefault(); // Prevent form submission
+                addRow('assistantBody', 'Assistant', 'assistant-select', `
+                @foreach ($users as $us)
+                    @if ($us->roles->contains('name', 'assistant'))
+                        <!-- If using a collection of roles -->
+                        <option value="{{ $us->id }}">{{ $us->name }}
+                        </option>
+                    @endif
+                @endforeach
+            `);
+            });
+
+            // Add Beautician event
+            $('.add-beautician').on('click', function(e) {
+                e.preventDefault(); // Prevent form submission
+                addRow('beauticianBody', 'Beautician', 'beautician-select', `
+                @foreach ($users as $us)
+                    @if ($us->roles->contains('name', 'beautician'))
+                        <!-- If using a collection of roles -->
+                        <option value="{{ $us->id }}">{{ $us->name }}
+                        </option>
+                    @endif
+                @endforeach
+            `);
+            });
+
+            // Remove row event
+            $(document).on('click', '.remove-row', function(e) {
+                e.preventDefault(); // Prevent form submission
+                $(this).closest('tr').remove();
+            });
+
+        });
+    </script>
 @endsection

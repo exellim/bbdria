@@ -9,6 +9,8 @@ use App\Models\Treatments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class AppointmentController extends Controller
 {
@@ -16,7 +18,7 @@ class AppointmentController extends Controller
     public function index()
     {
         $branch = Auth::user()->branches[0];
-        $appointments = Appointments::with('customer','details.treatment')->where('branch_id',$branch->id)->get();
+        $appointments = Appointments::with('customer','details.treatment')->where('branch_id',$branch->id)->latest()->get();
         $customers = Customers::with('branch')->get();
         $treatment = Treatments::where('branch_id',$branch->id)->get();
 
@@ -76,5 +78,66 @@ class AppointmentController extends Controller
 
         return redirect()->back();
 
+    }
+
+    public function updateTime(Request $request, $id)
+    {
+        $appointment = Appointments::find($id);
+
+        $appointment->appointment_date = $request->input('appointment_date');
+        $appointment->appointment_time = $request->input('appointment_time');
+        $appointment->save();
+
+
+        session()->flash('toast', [
+            'icon' => 'success',
+            'title' => 'Operation Successful!',
+            'text' => 'Appointment Updated',
+        ]);
+
+        return redirect()->route('appointments.index');
+    }
+
+    public function changeTr($receipt)
+    {
+        $branch = Auth::user()->branches[0];
+
+        $appointments = Appointments::with('customer','details.treatment')->where('receipt_code', $receipt)->get();
+        $treatment = Treatments::where('branch_id',$branch->id)->get();
+
+        // dd( );
+
+        return view('pages.appointments.change', compact('appointments','treatment'));
+    }
+
+    public function acceptTr(Request $request, $receipt)
+    {
+
+        // Validate the request data
+        $validatedData = $request->validate([
+            'treatment_id' => 'required|array', // Validate treatment IDs as an array
+            'treatment_id.*' => 'exists:treatments,id', // Ensure each treatment ID exists
+        ]);
+
+        // Find and delete all existing details with the given receipt_code
+        AppointmentsDetails::where('receipt_code', $receipt)->delete();
+
+        // Create new details for each treatment ID
+        foreach ($validatedData['treatment_id'] as $treatmentId) {
+            AppointmentsDetails::create([
+                'receipt_code' => $receipt,
+                'treatment_id' => $treatmentId,
+            ]);
+        }
+
+        // Flash a success message to the session
+        session()->flash('toast', [
+            'icon' => 'success',
+            'title' => 'Operation Successful!',
+            'text' => 'Appointment Updated',
+        ]);
+
+        // Redirect to the appointments index route
+        return redirect()->route('appointments.index');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointments;
 use App\Models\Items;
+use App\Models\MonthlyFinance;
 use App\Models\Supplies;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -26,6 +27,13 @@ class DashboardController extends Controller
         $items = Items::with('category','branch','itemsStock')->where('branch_id',$branch)->get();
         $supplies = Supplies::with('itemsStock','branch')->where('branch_id',$branch)->get();
 
+        $monthly_finances = MonthlyFinance::with('branch')
+        ->where('branch_id', $branch)
+        ->whereMonth('finance_date', $currentMonth)
+        ->get();
+
+        // dd($monthly_finances);
+
         $suppliesExpenses = 0;
         // Initialize total sum
         $appointmentProfit = 0;
@@ -44,13 +52,13 @@ class DashboardController extends Controller
         // Iterate over each itemStock in the supply
         foreach ($supply->itemsStock as $key=>$itemStock) {
             // Calculate cost: hpp * qty
-            $suppliesExpenses += $supply->hpp * $itemStock->qty;
+            $suppliesExpenses += $supply->hpp * ($itemStock->qty / $itemStock->capacity);
             // dd($suppliesExpenses,$supply->hpp, $itemStock->qty);
         }
     }
 
         // dd($suppliesExpenses);
 
-        return view('dashboard',compact('appointmentProfit','suppliesExpenses'));
+        return view('dashboard',compact('appointmentProfit','suppliesExpenses','monthly_finances'));
     }
 }

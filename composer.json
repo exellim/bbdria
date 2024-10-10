@@ -8,6 +8,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "simplesoftwareio/simple-qrcode": "~4",
         "spatie/laravel-permission": "^6.9"
     },
     "require-dev": {
@@ -24,7 +25,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/encr.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

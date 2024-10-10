@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('supply_id')->constrained('supplies')->onDelete('cascade');
             $table->decimal('qty', 10, 2);
             $table->string('units', 50);
+            $table->decimal('capacity', 10, 2)->default('0');
+            $table->decimal('reminder', 10, 2)->default('0');
             $table->timestamps();
         });
     }

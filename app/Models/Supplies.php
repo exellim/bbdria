@@ -18,22 +18,29 @@ class Supplies extends Model
         'image',
     ];
 
-        // Relationship with Branch
-        public function branch()
-        {
-            return $this->belongsTo(Branch::class);
-        }
 
-        // Relationship with TreatmentComponent
-        public function components()
-        {
-            return $this->hasMany(TreatmentsComponents::class, 'supplies_id');
-        }
+    // Relationship with AppointmentTreatment
+    public function appointmentTreatments()
+    {
+        return $this->hasMany(AppointmentTreatments::class, 'supply_id');
+    }
 
-        // Relationship with SuppliesStock
-        public function itemsStock()
-        {
-            return $this->hasMany(SuppliesStock::class,'supply_id');
-        }
+    // Relationship with Branch
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    // Relationship with TreatmentComponent
+    public function components()
+    {
+        return $this->hasMany(TreatmentsComponents::class, 'supplies_id');
+    }
+
+    // Relationship with SuppliesStock
+    public function itemsStock()
+    {
+        return $this->hasMany(SuppliesStock::class,'supply_id');
+    }
 
 }

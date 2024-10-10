@@ -14,6 +14,8 @@ class SuppliesStock extends Model
         'supply_id',
         'qty',
         'units',
+        'capacity',
+        'reminder',
     ];
 
     // Relationship with Supplies

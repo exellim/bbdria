@@ -17,6 +17,7 @@
             padding: 10px;
         }
 
+
         /* Floating action button */
         @import url("https://fonts.googleapis.com/css?family=Roboto");
 
@@ -173,6 +174,11 @@
         .action-span i {
             font-size: 1.5rem;
         }
+
+        a.disabled {
+            pointer-events: none;
+            cursor: default;
+        }
     </style>
 @endsection
 
@@ -196,20 +202,108 @@
 
         </div>
         <div class="card-body">
-            @if (isset($appointments[0]->receipt_code))
-                <div class="row d-flex justify-content-evenly">
-                    @foreach ($appointments as $appoint)
+            @php
+                use Carbon\Carbon;
+
+                // Get the current year and month
+                $currentYear = now()->year;
+                $currentMonth = now()->month;
+
+                // Helper function to convert date string to Carbon instance
+                function toCarbon($dateString)
+                {
+                    return Carbon::parse($dateString);
+                }
+
+                // Filter and sort appointments for the current month
+                $currentMonthAppointments = $appointments
+                    ->filter(function ($appoint) use ($currentYear, $currentMonth) {
+                        $appointmentDate = toCarbon($appoint->appointment_date);
+                        return $appointmentDate->year == $currentYear && $appointmentDate->month == $currentMonth;
+                    })
+                    ->sort(function ($a, $b) {
+                        $dateComparison = toCarbon($a->appointment_date)->lt(toCarbon($b->appointment_date))
+                            ? -1
+                            : (toCarbon($a->appointment_date)->gt(toCarbon($b->appointment_date))
+                                ? 1
+                                : 0);
+                        if ($dateComparison == 0) {
+                            // If dates are the same, compare times
+                            return toCarbon($a->appointment_time)->lt(toCarbon($b->appointment_time))
+                                ? -1
+                                : (toCarbon($a->appointment_time)->gt(toCarbon($b->appointment_time))
+                                    ? 1
+                                    : 0);
+                        }
+                        return $dateComparison;
+                    });
+
+                // Filter and sort appointments for upcoming months
+                $upcomingMonthAppointments = $appointments
+                    ->filter(function ($appoint) use ($currentYear, $currentMonth) {
+                        $appointmentDate = toCarbon($appoint->appointment_date);
+                        $appointmentYear = $appointmentDate->year;
+                        $appointmentMonth = $appointmentDate->month;
+
+                        // Check if the appointment is in a future month within the current year or in the next year
+                        return ($appointmentYear == $currentYear && $appointmentMonth > $currentMonth) ||
+                            $appointmentYear > $currentYear;
+                    })
+                    ->sort(function ($a, $b) {
+                        $dateComparison = toCarbon($a->appointment_date)->lt(toCarbon($b->appointment_date))
+                            ? -1
+                            : (toCarbon($a->appointment_date)->gt(toCarbon($b->appointment_date))
+                                ? 1
+                                : 0);
+                        if ($dateComparison == 0) {
+                            // If dates are the same, compare times
+                            return toCarbon($a->appointment_time)->lt(toCarbon($b->appointment_time))
+                                ? -1
+                                : (toCarbon($a->appointment_time)->gt(toCarbon($b->appointment_time))
+                                    ? 1
+                                    : 0);
+                        }
+                        return $dateComparison;
+                    });
+            @endphp
+
+            @if ($currentMonthAppointments->isNotEmpty())
+                <h4>This Month</h4>
+                <div class="row d-flex">
+                    @foreach ($currentMonthAppointments as $appoint)
                         <div class="col justify-content-center mb-4" style="flex: 0 0 0% !important">
                             <div class="card rounded-xl text-white bg-primary mb-2 p-2 card-hover"
-                                style="max-width: 18rem; min-width: 16rem;" data-bs-toggle="modal"
+                                style="max-width: 18rem; min-width: 16rem; max-height:460px;" data-bs-toggle="modal"
                                 data-bs-target="#customer-view-{{ $appoint->id }}">
                                 <img class="card-img-top border border-light"
                                     src="{{ asset('storage/' . $appoint->customer->image) }}" alt="Card image cap">
-                                <div class="card-header py-1"></div>
-                                <div class="card-body">
-                                    <h3>{{ $appoint->customer->name }}</h3>
+                                <div class="card-header">
                                     <h4>{{ $appoint->receipt_code }}</h4>
-                                    <h4>{{ $appoint->appointment_date }} / {{ $appoint->appointment_time }}</h4>
+                                    <strong>Status: {{ $appoint->status }}</strong>
+                                </div>
+                                <div class="card-body items-center">
+                                    <!-- <h5>{{ Str::limit($appoint->customer->name, 18, '') }}</h5> -->
+                                    {{-- <h4>Date:{{ toCarbon($appoint->appointment_date)->format('Y-m-d') }}
+                                        Time:{{ $appoint->appointment_time }}</h4> --}}
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                            <td style="text-align: left; vertical-align: top;">Name</td>
+                                                <td style="text-align: left; vertical-align: top;">:</td>
+                                                <td style="overflow: hidden;">{{ Str::limit($appoint->customer->name, 18,'') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Date</td>
+                                                <td>:</td>
+                                                <td>{{ toCarbon($appoint->appointment_date)->format('Y-m-d') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Time</td>
+                                                <td>:</td>
+                                                <td>{{ $appoint->appointment_time }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -217,9 +311,54 @@
                 </div>
             @else
                 <div>
-                    <h4>-- No Appointment Available --</h4>
+                    <h4>-- No Appointment for Current Month --</h4>
                 </div>
             @endif
+            <hr class="bg-danger border-2 border-top border-danger" />
+
+            @if ($upcomingMonthAppointments->isNotEmpty())
+                <h4>Upcoming Months</h4>
+                <div class="row d-flex">
+                    @foreach ($upcomingMonthAppointments as $appoint)
+                    <div class="col justify-content-center mb-4" style="flex: 0 0 0% !important">
+                        <div class="card rounded-xl text-white bg-primary mb-2 p-2 card-hover"
+                            style="max-width: 18rem; min-width: 16rem; max-height:460px;" data-bs-toggle="modal"
+                            data-bs-target="#customer-view-{{ $appoint->id }}">
+                            <img class="card-img-top border border-light"
+                                src="{{ asset('storage/' . $appoint->customer->image) }}" alt="Card image cap">
+                            <div class="card-header">
+                                <h4>{{ $appoint->receipt_code }}</h4>
+                                <strong>Status: {{ $appoint->status }}</strong>
+                            </div>
+                            <div class="card-body items-center">
+                                <h5>{{ Str::limit($appoint->customer->name, 18, '') }}</h5>
+                                {{-- <h4>Date:{{ toCarbon($appoint->appointment_date)->format('Y-m-d') }}
+                                    Time:{{ $appoint->appointment_time }}</h4> --}}
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td>Date</td>
+                                            <td>:</td>
+                                            <td>{{ toCarbon($appoint->appointment_date)->format('Y-m-d') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time</td>
+                                            <td>:</td>
+                                            <td>{{ $appoint->appointment_time }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div>
+                    <h4>-- No Upcoming Appointments --</h4>
+                </div>
+            @endif
+
         </div>
     </div>
     {{-- Floating Action Buttons Start --}}
@@ -337,10 +476,10 @@
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-gradient-success btn-icon-text">
-                            <i class="mdi mdi-close-box btn-icon-prepend"></i> Save
+                            <i class="mdi mdi-hospital btn-icon-prepend"></i> Save
                         </button>
                         <button type="button" class="btn btn-gradient-danger btn-icon-text" data-bs-dismiss="modal">
-                            <i class="mdi mdi-hospital btn-icon-prepend"></i> Cancel
+                            <i class="mdi mdi-close-box btn-icon-prepend"></i> Cancel
                         </button>
 
                     </div>
@@ -352,8 +491,10 @@
 
     {{-- Modal View Start --}}
     @foreach ($appointments as $appoint)
-        <form method="POST" action="{{ route('items.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('appointments.update.time', $appoint->id) }}"
+            enctype="multipart/form-data">
             @csrf
+            @method('put')
             <div class="modal fade" id="customer-view-{{ $appoint->id }}" tabindex="-1"
                 aria-labelledby="cardModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -384,8 +525,27 @@
                                                 </tr>
                                                 <tr>
                                                     <td>Appointment Time</td>
-                                                    <td>{{ $appoint->appointment_date }} /
-                                                        {{ $appoint->appointment_time }}</td>
+                                                    <td>
+                                                        <div id="editable-{{ $appoint->id }}">
+                                                            {{ $appoint->appointment_date }} /
+                                                            {{ $appoint->appointment_time }}
+                                                        </div>
+                                                        <div id="editable-show-{{ $appoint->id }}" hidden>
+                                                            <input required type="date" class="form-control"
+                                                                name="appointment_date"
+                                                                value="{{ $appoint->appointment_date }}">
+                                                            <input required type="time" class="form-control"
+                                                                name="appointment_time"
+                                                                value="{{ $appoint->appointment_time }}">
+                                                        </div>
+                                                        @if ($appoint->status === 'finish')
+                                                        @else
+                                                            <button type="button" onclick="editme({{ $appoint->id }})"
+                                                                class="btn btn-sm btn-danger btn-rounded">
+                                                                <i class="mdi mdi-clock"></i>
+                                                            </button>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">
@@ -419,13 +579,49 @@
                                                                                 @endforeach
                                                                             </tbody>
                                                                         </table>
-
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                 </tr>
+                                                @if ($appoint->status === 'finish')
+                                                <tr>
+                                                    <td colspan="2">
+                                                        <!-- Move accordion below the table -->
+                                                        <div class="accordion" id="accordionExample">
+                                                            <div class="accordion-item">
+                                                                <h2 class="accordion-header" id="headingOne">
+                                                                    <button class="accordion-button bg-primary"
+                                                                        type="button" data-bs-toggle="collapse"
+                                                                        data-bs-target="#collapseOne" aria-expanded="true"
+                                                                        aria-controls="collapseOne">
+                                                                        Treated By
+                                                                    </button>
+                                                                </h2>
+                                                                <div id="collapseOne"
+                                                                    class="accordion-collapse collapse show"
+                                                                    aria-labelledby="headingOne"
+                                                                    data-bs-parent="#accordionExample">
+                                                                    <div class="accordion-body">
+                                                                        <table>
+                                                                            <tbody>
+                                                                                @foreach ($appoint->pics as $key => $pic)
+                                                                                    <tr>
+                                                                                        <td>{{ $key + 1 }}</td>
+                                                                                        <td>{{ $pic->user->name }}</td>
+                                                                                        <td>{{ $pic->user->roles[0]->name }}</td>
+                                                                                    </tr>
+                                                                                @endforeach
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                @endif
                                             </tbody>
                                         </table>
                                     </div>
@@ -441,16 +637,25 @@
 
                             </div>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-gradient-success btn-icon-text" hidden>
-                                    <i class="mdi mdi-close-box btn-icon-prepend"></i> Save
+                                <button type="submit" class="btn btn-gradient-success btn-icon-text"
+                                    id="save_button-{{ $appoint->id }}" hidden>
+                                    <i class="mdi mdi-hospital btn-icon-prepend"></i> Save
                                 </button>
-                                <a href="{{ route('appointments.attend', $appoint->id) }}" target="_blank"
-                                    class="btn btn-gradient-primary btn-icon-text">
-                                    <i class="mdi mdi-briefcase-check btn-icon-prepend"></i> Attend
-                                </a>
+                                @if ($appoint->status === 'finish')
+                                @else
+                                    <a href="{{ route('appointments.changetr', $appoint->receipt_code) }}"
+                                        id="stopme-{{ $appoint->id }}" target="_blank"
+                                        class="btn btn-gradient-warning btn-icon-text">
+                                        <i class="mdi mdi-contrast-circle btn-icon-prepend"></i> Change Treatment
+                                    </a>
+                                    <a href="{{ route('appointments.attend', $appoint->id) }}" id="stopme"
+                                        target="_blank" class="btn btn-gradient-primary btn-icon-text">
+                                        <i class="mdi mdi-briefcase-check btn-icon-prepend"></i> Attend
+                                    </a>
+                                @endif
                                 <button type="button" class="btn btn-gradient-danger btn-icon-text"
                                     data-bs-dismiss="modal">
-                                    <i class="mdi mdi-hospital btn-icon-prepend"></i> Close
+                                    <i class="mdi mdi-close-box btn-icon-prepend"></i> Close
                                 </button>
 
                             </div>
@@ -461,29 +666,42 @@
         </form>
     @endforeach
     {{-- Modal View End --}}
-
 @endsection
 @section('scripts')
     <script>
-        // $(document).ready(function() {
+        function editme(index) {
+            const editable = document.querySelector('#editable-' + index);
+            const editableShow = document.querySelector('#editable-show-' + index);
+            const stopme = document.querySelector('#stopme');
+            const stopme_2 = document.querySelector('#stopme-' + index);
+            const save_button = document.querySelector('#save_button-' + index);
 
-        //     // $("#customer-name").select2({});
-        // });
+            if (editable.hasAttribute('hidden')) {
+                editable.removeAttribute('hidden');
+                editableShow.setAttribute('hidden', 'true');
+                stopme.removeAttribute('hidden');
+                stopme_2.removeAttribute('hidden');
+                save_button.setAttribute('hidden', 'true');
+            } else {
+                stopme.setAttribute('hidden', 'true');
+                stopme_2.setAttribute('hidden', 'true');
+                editable.setAttribute('hidden', 'true');
+                editableShow.removeAttribute('hidden');
+                save_button.removeAttribute('hidden');
 
-        // $(document).ready(function() {
-        //     $('.select2-bs5').select2({
-        //         theme: 'bootstrap-5'
-        //     });
-        // });
+            }
+        }
     </script>
 
     <script>
         $('#customer-name').select2({
             theme: 'bootstrap-5',
+            width: '100%',
             dropdownParent: $('#create-appointment')
         });
         $('.treatment_id[0]').select2({
             theme: 'bootstrap-5',
+            width: '100%',
             dropdownParent: $('#create-appointment')
         });
     </script>
@@ -519,6 +737,7 @@
         // Function to initialize Select2 on elements
         function initializeSelect2() {
             $('.single-select-field').select2({
+                width: '100%',
                 theme: 'bootstrap-5' // Assuming you're using Bootstrap 5 theme for Select2
             });
         }
